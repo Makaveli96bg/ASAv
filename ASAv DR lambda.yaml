@@ -9,10 +9,10 @@ Resources:
       Handler: index.lambda_handler
       Role: !GetAtt MyLambdaFunctionRole.Arn
       Runtime: python3.8
-      Timeout: 60
+      Timeout: 603
       Code:
-        S3Bucket: your-s3-bucket-name
-        S3Key: your-lambda-zip-file.zip
+        S3Bucket: vesko-test-bucket     # Bucket Name
+        S3Key: ASAv.zip                 # Python file
 
   MyLambdaFunctionRole:
     Type: 'AWS::IAM::Role'
@@ -35,9 +35,10 @@ Resources:
                   - logs:*
                   - ec2:*
                   - sns:*
+                  - events:PutEvents  # Add this line to allow putting events to EventBridge
                 Resource: "*"
 
-MyEventBridgeRule:
+  MyEventBridgeRule:
     Type: 'AWS::Events::Rule'
     Properties:
       Name: 'ASAv-Unavailable'
@@ -55,15 +56,24 @@ MyEventBridgeRule:
             - 'stopping'
             - 'stopped'
           instance-id:
-            - 'i-0ed35a18893e4e8c5'    # instance ID of ASAvOne
+            - 'i-0e28a88569a113ac4'    # instance ID of ASAvOne
       State: ENABLED
       Targets:
         - Arn: !GetAtt MyLambdaFunction.Arn
           Id: 'MyLambdaFunctionTarget'
+
+  PermissionForEvent0ToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt MyLambdaFunction.Arn
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt MyEventBridgeRule.Arn
+
 Outputs:
   MyLambdaFunctionArn:
     Description: 'ARN of the Lambda function'
     Value: !GetAtt MyLambdaFunction.Arn
-  MyCloudWatchEventRuleArn:
-    Description: 'ARN of the CloudWatch Events rule'
-    Value: !GetAtt MyCloudWatchEventRule.Arn
+  MyEventBridgeRuleArn:
+    Description: 'ARN of the EventBridge rule'
+    Value: !GetAtt MyEventBridgeRule.Arn
