@@ -37,17 +37,29 @@ Resources:
                   - sns:*
                 Resource: "*"
 
-  MyCloudWatchEventRule:
+MyEventBridgeRule:
     Type: 'AWS::Events::Rule'
     Properties:
-      Name: 'MyScheduledRule'
-      Description: 'Scheduled rule to trigger Lambda function'
-      ScheduleExpression: 'rate(1 hour)'  # Adjust the schedule as needed
+      Name: 'ASAv-Unavailable'
+      Description: 'EventBridge rule for EC2 instance state changes'
+      EventPattern:
+        source:
+          - 'aws.ec2'
+        detail-type:
+          - 'EC2 Instance State-change Notification'
+        detail:
+          state:
+            - 'pending'
+            - 'shutting-down'
+            - 'terminated'
+            - 'stopping'
+            - 'stopped'
+          instance-id:
+            - 'i-0ed35a18893e4e8c5'    # instance ID of ASAvOne
       State: ENABLED
       Targets:
         - Arn: !GetAtt MyLambdaFunction.Arn
           Id: 'MyLambdaFunctionTarget'
-
 Outputs:
   MyLambdaFunctionArn:
     Description: 'ARN of the Lambda function'
