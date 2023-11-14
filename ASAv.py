@@ -12,7 +12,7 @@ def lambda_handler(event, context):
     response_IP = ec2_cli.describe_addresses()
     
     if primary_instance.state['Name'] != "running":
-       print("Primary ASA gone down, Deleted 18.134.192.154 from Primary ASA and Attached 18.134.192.154 in Secondary ASA")
+       print("Primary ASA gone down, Deleted 3.10.245.197 from Primary ASA and Attached 3.10.245.197 in Secondary ASA")
        
        #-------------Replace the Route of 172.16.1.0/24--------------
        Replace_route_172_16_1_0_24 = ec2_cli.replace_route (
@@ -28,11 +28,11 @@ def lambda_handler(event, context):
                                        
        #---------------DisassociateIP----------------
        disassociateIP_response_Primary = ec2_cli.disassociate_address(
-       PublicIp=  '18.134.192.154') 
+       PublicIp=  '3.10.245.197') 
        #------------------AssociateIP---------------------------------------
        AssociateIP_response_Secondary=ec2_cli.associate_address(
        AllocationId= 'eipalloc-0d684af2afccff218',              # ASAvOne ASAvExternalIp
-       NetworkInterfaceId= 'eni-045d87815d166d152')             # outside interface on ASAvTWO
+       NetworkInterfaceId= 'eni-045d87815d166d152')             # outside interface on ASAvTwo
     
     else:
         print("Primary ASA is running")
