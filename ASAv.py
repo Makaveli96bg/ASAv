@@ -2,8 +2,8 @@ import json
 import boto3
 
 def lambda_handler(event, context):
-    master_id="i-0be17e9b4155d6ec4"
-    slave_id="i-023630368eed76596"
+    master_id="i-0ed35a18893e4e8c5"
+    slave_id="i-05cdb109f20b48997"
     ec2_re=boto3.resource("ec2",'eu-west-2')
     ec2_cli=boto3.client("ec2",'eu-west-2')
     #sns_client=boto3.client("sns",'eu-west-2')
@@ -17,8 +17,8 @@ def lambda_handler(event, context):
        #-------------Replace the Route of 172.16.1.0/24--------------
        Replace_route_172_16_1_0_24 = ec2_cli.replace_route (
        DestinationCidrBlock='172.16.1.0/24',
-       NetworkInterfaceId='eni-08ab1d0bea0c6e57e',
-       RouteTableId='rtb-0f7ebd55e74800462')
+       NetworkInterfaceId='eni-04099ea4d478df814', #inside interfce on ASAvTwo
+       RouteTableId='rtb-0d6253afbd5268fb1') #main RT 
        
        #-------------Replace the Route of x.x.x.x/x--------------
        #Replace_route_x_x_x_x_x = ec2_cli.replace_route (
