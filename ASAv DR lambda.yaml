@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS CloudFormation Template for Lambda and CloudWatch Events'
+
+Resources:
+  MyLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'ASAv-DR-Lambda'
+      Handler: index.lambda_handler
+      Role: !GetAtt MyLambdaFunctionRole.Arn
+      Runtime: python3.8
+      Timeout: 60
+      Code:
+        S3Bucket: your-s3-bucket-name
+        S3Key: your-lambda-zip-file.zip
+
+  MyLambdaFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: 'ASALambdaRole'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: 'ASALambdaPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:*
+                  - ec2:*
+                  - sns:*
+                Resource: "*"
+
+  MyCloudWatchEventRule:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: 'MyScheduledRule'
+      Description: 'Scheduled rule to trigger Lambda function'
+      ScheduleExpression: 'rate(1 hour)'  # Adjust the schedule as needed
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt MyLambdaFunction.Arn
+          Id: 'MyLambdaFunctionTarget'
+
+Outputs:
+  MyLambdaFunctionArn:
+    Description: 'ARN of the Lambda function'
+    Value: !GetAtt MyLambdaFunction.Arn
+  MyCloudWatchEventRuleArn:
+    Description: 'ARN of the CloudWatch Events rule'
+    Value: !GetAtt MyCloudWatchEventRule.Arn
