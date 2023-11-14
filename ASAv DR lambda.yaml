@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'AWS CloudFormation Template for Lambda and CloudWatch Events'
+Description: 'AWS CloudFormation Template for Cisco ASAv DR'
 
 Resources:
   MyLambdaFunction:
