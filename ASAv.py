@@ -17,8 +17,8 @@ def lambda_handler(event, context):
        #-------------Replace the Route of 172.16.1.0/24--------------
        Replace_route_172_16_1_0_24 = ec2_cli.replace_route (
        DestinationCidrBlock='172.16.1.0/24',
-       NetworkInterfaceId='eni-04099ea4d478df814', #inside interfce on ASAvTwo
-       RouteTableId='rtb-0d6253afbd5268fb1') #main RT 
+       NetworkInterfaceId='eni-04099ea4d478df814',              # inside interfce on ASAvTwo
+       RouteTableId='rtb-0d6253afbd5268fb1')                    # main RT 
        
        #-------------Replace the Route of x.x.x.x/x--------------
        #Replace_route_x_x_x_x_x = ec2_cli.replace_route (
@@ -31,8 +31,8 @@ def lambda_handler(event, context):
        PublicIp=  '18.134.192.154') 
        #------------------AssociateIP---------------------------------------
        AssociateIP_response_Secondary=ec2_cli.associate_address(
-       AllocationId= 'eipalloc-0deff2c99a304d091',
-       NetworkInterfaceId= 'eni-05711c13c48916c7d')
+       AllocationId= 'eipalloc-0d684af2afccff218',              # ASAvOne ASAvExternalIp
+       NetworkInterfaceId= 'eni-045d87815d166d152')             # outside interface on ASAvTWO
     
     else:
         print("Primary ASA is running")
