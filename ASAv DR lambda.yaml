@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS CloudFormation Template for Cisco ASAv DR'
+
+Resources:
+  MyLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'ASAv-DR-Lambda'
+      Handler: index.lambda_handler
+      Role: !GetAtt MyLambdaFunctionRole.Arn
+      Runtime: python3.8
+      Timeout: 603
+      Code:
+        S3Bucket:              # Bucket Name
+        S3Key:                 # Python file
+
+  MyLambdaFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: 'ASALambdaRole'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: 'ASALambdaPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:*
+                  - ec2:*
+                  - sns:*
+                  - events:PutEvents  # Add this line to allow putting events to EventBridge
+                Resource: "*"
+
+  MyEventBridgeRule:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: 'ASAv-Unavailable'
+      Description: 'EventBridge rule for EC2 instance state changes'
+      EventPattern:
+        source:
+          - 'aws.ec2'
+        detail-type:
+          - 'EC2 Instance State-change Notification'
+        detail:
+          state:
+            - 'pending'
+            - 'shutting-down'
+            - 'terminated'
+            - 'stopping'
+            - 'stopped'
+          instance-id:
+            - 'i-0ed35a18893e4e8c5'    # instance ID of ASAvOne
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt MyLambdaFunction.Arn
+          Id: 'MyLambdaFunctionTarget'
+
+  PermissionForEvent0ToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt MyLambdaFunction.Arn
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt MyEventBridgeRule.Arn
+
+Outputs:
+  MyLambdaFunctionArn:
+    Description: 'ARN of the Lambda function'
+    Value: !GetAtt MyLambdaFunction.Arn
+  MyEventBridgeRuleArn:
+    Description: 'ARN of the EventBridge rule'
+    Value: !GetAtt MyEventBridgeRule.Arn
